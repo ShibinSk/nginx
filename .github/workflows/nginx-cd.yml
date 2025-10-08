@@ -8,7 +8,7 @@ on:
         required: true
         type: choice
         options:
-          - my-app-server
+          - my-app
       deployment_region:
         description: 'Deployment Region'
         required: true
