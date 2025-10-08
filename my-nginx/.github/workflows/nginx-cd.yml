@@ -1,0 +1,74 @@
+name: CD - cv-nginx
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_target:
+        description: 'Deployment Target'
+        required: true
+        type: choice
+        options:
+          - my-app-server
+      deployment_region:
+        description: 'Deployment Region'
+        required: true
+        type: choice
+        options:
+          - eu-north-1
+          - ca-central-1
+      ecr_region:
+        description: 'ECR Region'
+        required: true
+        type: choice
+        options:
+          - eu-north-1
+          - ca-central-1
+
+env:
+  AWS_EC2_REGION: ${{ github.event.inputs.deployment_region }}
+  AWS_ECR_REGION: ${{ github.event.inputs.ecr_region }}
+  ECR_REPOSITORY: my-app
+  CONTAINER_NAME: my-nginx
+  EXPOSE_PORTS: -p 80:80 -p 443:443
+  VOLUMES: /etc/letsencrypt:/etc/letsencrypt
+
+jobs:
+  deploy:
+    runs-on: ${{ github.event.inputs.deployment_target }}
+    permissions:
+      id-token: write
+      contents: read
+
+    steps:
+      - name: Configure AWS Credentials for EC2
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::776410619441:role/github-actions-cicd
+          aws-region: ${{ env.AWS_EC2_REGION }}
+
+      - name: Configure AWS Credentials for ECR
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::776410619441:role/github-actions-cicd
+          aws-region: ${{ env.AWS_ECR_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+        with:
+          mask-password: 'false'
+
+      - name: Pull Docker image
+        run: docker pull 776410619441.dkr.ecr.${{ env.AWS_ECR_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
+
+      - name: Configure AWS Credentials for EC2 (again if needed)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::776410619441:role/github-actions-cicd
+          aws-region: ${{ env.AWS_EC2_REGION }}
+
+      - name: Delete old docker container
+        run: docker rm -f ${{ env.CONTAINER_NAME }} || true
+
+      - name: Run docker container
+        run: docker run -d ${{ env.EXPOSE_PORTS }} -v ${{ env.VOLUMES }} --network host --name ${{ env.CONTAINER_NAME }} --restart always 776410619441.dkr.ecr.${{ env.AWS_ECR_REGION }}.amazonaws.com/${{ env.ECR_REPOSITORY }}:latest
