@@ -33,7 +33,7 @@ env:
   VOLUMES: /etc/letsencrypt:/etc/letsencrypt
 jobs:
   deploy:
-    runs-on: self-hosted
+    runs-on: ${{ github.event.inputs.deployment_target}}
     permissions:
       id-token: write
       contents: read
