@@ -9,6 +9,7 @@ on:
         type: choice
         options:
           - my-app
+          - backend-server
       deployment_region:
         description: 'Deployment Region'
         required: true
