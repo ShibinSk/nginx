@@ -34,7 +34,7 @@ env:
 
 jobs:
   deploy:
-    runs-on: ${{ github.event.inputs.deployment_target }}
+    runs-on: ${{ github.event.inputs.deployment_target || 'ubuntu-latest' }}
     permissions:
       id-token: write
       contents: read
