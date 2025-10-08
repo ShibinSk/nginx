@@ -1,4 +1,4 @@
-name: CD - cv-nginx
+name: CD - my-nginx
 
 on:
   workflow_dispatch:

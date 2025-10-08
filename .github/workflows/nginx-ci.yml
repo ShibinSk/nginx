@@ -1,4 +1,4 @@
-name: CI - cv-nginx
+name: CI - my-nginx
 
 on:
   push:
