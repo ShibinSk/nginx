@@ -31,7 +31,6 @@ env:
   CONTAINER_NAME: my-nginx
   EXPOSE_PORTS: -p 80:80 -p 443:443
   VOLUMES: /etc/letsencrypt:/etc/letsencrypt
-
 jobs:
   deploy:
     runs-on: ${{ github.event.inputs.deployment_target || 'ubuntu-latest' }}
